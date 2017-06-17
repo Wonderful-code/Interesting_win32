@@ -3,18 +3,18 @@
 *******************************************************************************************************
 *******************************************************************************************************
 **                                                                                                   **
-**                        　　                                                                       **
-**　　 IIIIII  NN   NN  TTTTTT   EEEEEEE   RRRRR    EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
-**　　   II    NNN  NN    TT    EE        RR   RR  EE        SS   SS    II    OO    OO  NNN  NN      **
-** 　　　II　　NNNN NN    TT    EEEEEEEE  RR   RR  EEEEEEE    SS        II    OO    OO  NNNN NN      **
-**       II    NN NNNN    TT    EEEEEEEE  RRRRR    EEEEEEE      SSS     II    OO    OO  NN NNNN      **
-** 　　  II  　NN  NNN    TT    EE        RR  RR   EE        SS   SS    II    OO    OO  NN  NNN      **
-** 　　IIIIII　NN   NN    TT     EEEEEEE  RR   RR   EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
+**                                                                                                   **
+**     IIIIII  NN   NN  TTTTTT   EEEEEEE   RRRRR    EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
+**       II    NNN  NN    TT    EE        RR   RR  EE        SS   SS    II    OO    OO  NNN  NN      **
+**       II    NNNN NN    TT    EEEEEEEE  RR   RR  EEEEEEE    SS        II    OO    OO  NNNN NN      **
+**       II    NN NNNN    TT    EEEEEEEE  RRRRR    EEEEEEE      SS      II    OO    OO  NN NNNN      **
+**       II  　NN  NNN    TT    EE        RR  RR   EE        SS   SS    II    OO    OO  NN  NNN      **
+**     IIIIII　NN   NN    TT     EEEEEEE  RR   RR   EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
 **                                                                                                   **
 **                                                                                                   **
 *******************************************************************************************************
 *******************************************************************************************************
-Interesion 是一款监控，脸部识别
+Interesion 是一款监控,脸部识别
 interesion_model 是Interesion 的核心模块
 
 1.进行身份识别
@@ -77,8 +77,8 @@ class exciting(object):
 
 	def __init__(self,camera,#摄像头对象
 					name='Interesing',
-					width =1000,
-					height=800,
+					width =800,
+					height=1000,
 					history=20,#背景建模样本量
 					args=500):#忽略大小
 					
@@ -89,6 +89,7 @@ class exciting(object):
 		self.camera = camera
 		self.history = history
 
+		self.time = None
 		self.gray = None
 		self.model = None
 		self._frame = None
@@ -106,7 +107,7 @@ class exciting(object):
 		self._data = {}
 
 		self.detector = dlib.get_frontal_face_detector()
-		self.time = datetime.datetime.now().strftime(u"%Y-%d %I:%M:%S")
+		
 		self.hog = cv2.HOGDescriptor()#初始化方向梯度直方图描述子/设置支持向量机
 		self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 		self.bg = cv2.createBackgroundSubtractorKNN(detectShadows=True)#初始化背景分割器
@@ -127,9 +128,6 @@ class exciting(object):
 	def setface(self,face):
 		with open('face.json','w', encoding='utf8') as f:
 			json.dump(self._data,f,ensure_ascii=False)
-	#调用摄像头
-	def riteCamera(self):
-		self.camera = cv2.VideoCapture(0) 
 	
 	def inside(self,r1,r2):
 		x1,y1,w1,h1 = r1
@@ -249,7 +247,7 @@ class exciting(object):
 			for j in range(0,len(faces[i])):
 				Collision=self.Collision(x)
 				self.pd.drawConfirm(face)
-				self.pd.show_text(self.pd._screen,(fx+fw,fy+(45*j)),faces[i][j],(255,255,255), True,30)
+				self.pd.show_text(self.pd._screen,(fx+fw,fy+(45*j)),faces[i][j],2, True,30)
 	#基础脸部识别		
 	def face(self,gray):
 		return self.face_alt2.detectMultiScale(gray, 1.3, 5)#脸
@@ -315,31 +313,26 @@ class exciting(object):
 	#背景建模
 	@property
 	def bgbuild(self):
-		if self._frames < self.history:
-			try:
-				self.pd.show_text(self.pd._screen, (100,200),u"请离开镜头",(255, 255, 255), True,120)
-				self.pd.show_text(self.pd._screen, (110,320),u"背      景      建      模      中:  {}%".format((self._frames/self.history)*100),
-				(255, 255, 255), True,40)
+		try:
+			back = self.readBackgroud(5)
+		except:
+			if self._frames < self.history:
+				
+				self.pd.show_text((100,200),u"请离开镜头",1,True,120)
+				self.pd.show_text((110,320),u"背      景      建      模      中:  {}%".format((self._frames/self.history)*100),1,True,40)
 
 				KNN=self.KNN_difference(self._frame,self.args)
 				rect = self.people(self._frame) #人检查
 				dets = self.dlibFace(self._color)
 				face = self.face(self.gray) #脸
-		
+			
 				if rect != [] or face != () or dets != None or KNN != []:
 					self.pd.drawKNN(KNN)
 					self.pd.drawPeople(rect)
 					self.pd.drawFace(face)
-			except:
-				KNN=self.KNN_difference(self._frame,self.args)
-				if KNN != []:
-					pass
 				else:
 					self.writeBackgroud(self._frames)
-					self.frames += 1
-		else:
-			self.writeBackgroud(self._frames)
-			self._frames += 1
+					self._frames += 1
 
 	@property
 	def start(self):
@@ -348,17 +341,16 @@ class exciting(object):
 		self._frame = imutils.resize(cv_img,self.width,self.height)
 		self.gray = cv2.cvtColor(self._frame, cv2.COLOR_BGR2GRAY)#灰色
 		self._color = cv2.cvtColor(self._frame, cv2.COLOR_RGB2BGR)#opencv的色彩空间是BGR，pygame的色彩空间是RGB
-
-		self.pd.show_text((10,self._frame.shape[0]-40),self.time,(0,131,195),True,30)
+		self.pd.show_text((10,self._frame.shape[0]-40),datetime.datetime.now().strftime(u"%Y-%d %I:%M:%S"),15,True,30)
 		pygame.display.update()
 		pixl_arr = np.swapaxes(self._color, 0, 1)
 		new_surf = pygame.pixelcopy.make_surface(pixl_arr)
-		
 		self.pd._screen.blit(new_surf, (0, 0))#设置窗口背景
+		self.discern()
+		if self._faceShow != []:
+			self.pd.drawFaces(self._faceShow)
 		self.bgbuild#背景建模
-		self.pd.drawFace(self._faceShow)
 
-	@property
 	def discern(self):
 		KNN=self.KNN_difference(self._frame,self.args)
 		if  KNN != []:
@@ -367,11 +359,19 @@ class exciting(object):
 				self.pd.drawFace(face)#显示区域
 				for fx,fy,fw,fh in face:
 					roi = self.gray[fy:fy+fh,fx:fx+fw]
-					roj = self.color[fy:fy+fh,fx:fx+fw]
+					roj = self._color[fy:fy+fh,fx:fx+fw]
 					roi = cv2.resize(roi,(200,200))
 					roj = cv2.resize(roj,(200,200))
 
 					self._faceShow.append(roj)
+	def toArduino(self):
+		KNN=self.KNN_difference(self._frame,self.args)
+		if  KNN != []:
+			face=self.face(self.gray) #脸
+			if face != ():
+				self.pd.drawFace(face)#显示区域
+				for fx,fy,fw,fh in face:
+					return fx
 ''' 
 					x.append(np.asarray(roi,dtype=np.uint8))
 					y.append(faceslen)
@@ -387,7 +387,7 @@ class exciting(object):
 					cv2.imwrite('face/face_color/1/%s.png' % str(f),roj)
 					f =f+1
 '''
-
+	
 
 def car(self):
 	#汽车

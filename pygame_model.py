@@ -3,24 +3,24 @@
 *******************************************************************************************************
 *******************************************************************************************************
 **                                                                                                   **
-**                        　　                                                                       **
-**　　 IIIIII  NN   NN  TTTTTT   EEEEEEE   RRRRR    EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
-**　　   II    NNN  NN    TT    EE        RR   RR  EE        SS   SS    II    OO    OO  NNN  NN      **
-** 　　　II　　NNNN NN    TT    EEEEEEEE  RR   RR  EEEEEEE    SS        II    OO    OO  NNNN NN      **
-**       II    NN NNNN    TT    EEEEEEEE  RRRRR    EEEEEEE      SSS     II    OO    OO  NN NNNN      **
-** 　　  II  　NN  NNN    TT    EE        RR  RR   EE        SS   SS    II    OO    OO  NN  NNN      **
-** 　　IIIIII　NN   NN    TT     EEEEEEE  RR   RR   EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
+**                                                                                                   **
+**     IIIIII  NN   NN  TTTTTT   EEEEEEE   RRRRR    EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
+**       II    NNN  NN    TT    EE        RR   RR  EE        SS   SS    II    OO    OO  NNN  NN      **
+**       II    NNNN NN    TT    EEEEEEEE  RR   RR  EEEEEEE    SS        II    OO    OO  NNNN NN      **
+**       II    NN NNNN    TT    EEEEEEEE  RRRRR    EEEEEEE      SS      II    OO    OO  NN NNNN      **
+**       II  　NN  NNN    TT    EE        RR  RR   EE        SS   SS    II    OO    OO  NN  NNN      **
+**     IIIIII　NN   NN    TT     EEEEEEE  RR   RR   EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
 **                                                                                                   **
 **                                                                                                   **
 *******************************************************************************************************
 *******************************************************************************************************
-Interesion 是一款监控，脸部识别
+Interesion 是一款监控,脸部识别
 pygame_model 是Interesion 的pygame 显示模块
 
 1.pygame主模块
 2.显示模块
 
-备忘录：
+备忘录:
 主色:
 #F70022       #BB2D41       #A30016 	#FB415A		   #FB7487
 (247,0,34)  (187,45,65)    (163,0,22)  (251,65,90)   (251,116,135)
@@ -33,9 +33,11 @@ pygame_model 是Interesion 的pygame 显示模块
 互补色:
 #37E600		  #4AAE2A		#259800		#6AF33E		   #90F370
 (55,230,0)  (74,174,42)   (37,152,0)  (106,243,62)   (106,243,62)
-'''		
+'''
+import cv2
 import pygame
 import datetime
+import numpy as np
 from sys import exit
 from pygame.font import * 
 from pygame.locals import *
@@ -47,45 +49,40 @@ class pygameDraw(object):
 		self._height = height
 		self._width = width
 		self._screen = None
-				      #1           2
+				      #0           1
 		self._color = [[0,0,0],[255,255,255],
-					  #新的脸3       4           5           6           7
+						#新的脸2       3          4           5           6
 					  [247,0,34],[187,45,65],[163,0,22],[251,65,90],[251,116,135],
-					  #8             9            10          11           12
+					  #7             8            9          10           11
 					  [255,149,0],[193,133,47],[168,99,0],[255,177,66],[255,198,118],
-					  #13            14           15          16            17
+					  #12            13           14          15            16
 					  [0,104,197],[36,96,149],[0,69,130],[58,147,227],[105,169,227],
-					  #18            19          20           21          22
+					  #17            18          19           20         21
 					  [55,230,0],[74,174,42],[37,152,0],[106,243,62],[106,243,62]]
-		self.init()
+		self.init
 
+	@property
 	def init(self):
 		pygame.init()
 		pygame.display.set_caption(self._name)
-		self._screen = pygame.display.set_mode((self._width,self._height-399),pygame.RESIZABLE)
-		self._screen.fill(self._color[1])#用黑色填充窗口
-
-	def newWind(self):
 		self._screen = pygame.display.set_mode((self._width+200,self._height-399),pygame.RESIZABLE)
-		self._screen.fill(self._color[1])#用黑色填充窗口
+		self._screen.fill(self._color[0])#用黑色填充窗口
 
 	def show_text(self, pos, text, color, font_bold = False, font_size = 13, font_italic = False):
-		#Function:文字处理函数 pos：文字显示位置 color:文字颜色 font_bold:是否加粗 font_size:字体大小 font_italic:是否斜体 Output: NONE 
+		#Function:文字处理函数 pos:文字显示位置 color:文字颜色 font_bold:是否加粗 font_size:字体大小 font_italic:是否斜体 Output: NONE 
 		cur_font = pygame.font.SysFont("SourceHanSans-Bold", font_size)#获取系统字体，并设置文字大小  
 		cur_font.set_bold(font_bold)#设置是否加粗属性  
 		cur_font.set_italic(font_italic)#设置是否斜体属性
 		text_fmt = cur_font.render(text, 1, self._color[color])#设置文字内容 
-		return self.screen.blit(text_fmt, pos)#绘制文字 
-	@property
-	def time(self):
-		return self.show_text((10,frame.shape[0]-40),datetime.datetime.now().strftime(u"%Y-%d %I:%M:%S"),(0,131,195),True,30)
+		return self._screen.blit(text_fmt, pos)#绘制文字 
+
 	def drawPeople(self,rect):
 		for x,y,w,h in rect:
-			pygame.draw.rect(self._screen,self._color[19],[x,y,w-x,h-y],3)
+			pygame.draw.rect(self._screen,self._color[18],[x,y,w-x,h-y],3)
 	def drawKNN(self,KNN):
 		for r in KNN:
 			x,y,w,h = self.wrap_digit(r)
-			pygame.draw.rect(self._screen,self._color[18],[x,y,w,h],3)
+			pygame.draw.rect(self._screen,self._color[17],[x,y,w,h],3)
 	def drawFace(self,face,c=False):
 		if c:
 			color = 3 #新脸
@@ -98,25 +95,39 @@ class pygameDraw(object):
 			color = 3 #新脸
 		else:
 			color = 4 #已识别
-		pygame.draw.rect(et.screen,self.color[color],[x+w,y+(42*j),90,40])
+		pygame.draw.rect(self._screen,self._color[color],[x+w,y+(42*j),90,40])
 	
-	def drawFace(faceShow):
-		for i in range(0,len(faceShow)):
-			roj = cv2.cvtColor(faceShow[i], cv2.COLOR_RGB2BGR)
-			roj = np.swapaxes(roj, 0, 1)
+	def drawFaces(self,faceShow=[]):
+
+		for i in range(0,len(faceShow)+1):
+			roj = np.swapaxes(faceShow[i], 0, 1)
 			roj = pygame.pixelcopy.make_surface(roj)
-			self.show_text(et.screen,(width-100,10),str(f),(251,116,135),30)
-			self.show_text(et.screen,(width,i*200),str(i),(251,65,90),40)
+			#self.show_text(self._screen,(self._width-100,10),str(f),7,30)
+			self.show_text((self._width,i*200),str(i),6,40)
 
-			self._screen.blit(roj, (width, i*200))
+			return self._screen.blit(roj,(self._width, i*200))
 
-	def drawfames():
-		self.time
-		pygame.display.update()
-		pixl_arr = np.swapaxes(self._color, 0, 1)
-		new_surf = pygame.pixelcopy.make_surface(pixl_arr)
-		
-		self._screen.blit(new_surf, (0, 0))#设置窗口背景
+	def inside(self,r1,r2):
+		x1,y1,w1,h1 = r1
+		x2,y2,w2,h2 = r2
+		if (x1>x2) and (y1>y2) and (x1+w1<x2+w2) and (y1+h1<y2+h2):
+			return True
+		else:
+			return False 
+
+	def wrap_digit(self,rect):
+		x,y,w,h = rect
+		padding = 5
+		hcenter = x+w/2
+		vcenter = y+w/2
+		if(h>w):
+			w = h
+			x = hcenter - (w/2)
+		else:
+			h = w
+			y = vcenter - (w/2)
+		return (x-padding,y-padding,w+padding,h+padding)
+
 
 '''
 		视频: pygame.movie

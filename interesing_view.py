@@ -3,13 +3,13 @@
 *******************************************************************************************************
 *******************************************************************************************************
 **                                                                                                   **
-**                        　　                                                                       **
-**　　 IIIIII  NN   NN  TTTTTT   EEEEEEE   RRRRR    EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
-**　　   II    NNN  NN    TT    EE        RR   RR  EE        SS   SS    II    OO    OO  NNN  NN      **
-** 　　　II　　NNNN NN    TT    EEEEEEEE  RR   RR  EEEEEEE    SS        II    OO    OO  NNNN NN      **
-**       II    NN NNNN    TT    EEEEEEEE  RRRRR    EEEEEEE      SSS     II    OO    OO  NN NNNN      **
-** 　　  II  　NN  NNN    TT    EE        RR  RR   EE        SS   SS    II    OO    OO  NN  NNN      **
-** 　　IIIIII　NN   NN    TT     EEEEEEE  RR   RR   EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
+**                                                                                                   **
+**     IIIIII  NN   NN  TTTTTT   EEEEEEE   RRRRR    EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
+**       II    NNN  NN    TT    EE        RR   RR  EE        SS   SS    II    OO    OO  NNN  NN      **
+**       II    NNNN NN    TT    EEEEEEEE  RR   RR  EEEEEEE    SS        II    OO    OO  NNNN NN      **
+**       II    NN NNNN    TT    EEEEEEEE  RRRRR    EEEEEEE      SS      II    OO    OO  NN NNNN      **
+**       II  　NN  NNN    TT    EE        RR  RR   EE        SS   SS    II    OO    OO  NN  NNN      **
+**     IIIIII　NN   NN    TT     EEEEEEE  RR   RR   EEEEEE    SSSSS   IIIIII    OOOO    NN   NN      **
 **                                                                                                   **
 **                                                                                                   **
 *******************************************************************************************************
@@ -17,12 +17,16 @@
 Interesion 是一款监控，脸部识别
 interesing_view 是Interesion 的主循环模块
 
-使用方法：
-	
+使用方法:
+摄像头：
+python interesing_model.py
 
+视频：
+python interesing_model.py -v [name*].[mp4|rmvb|flv|mpeg|avi|...]
 '''
 import cv2
 import time
+import pygame
 import argparse
 import numpy as np
 from sys import exit
@@ -49,19 +53,11 @@ else:
 width = args["width"]
 height = args["height"]
 
-#faceslen=0
-#firstFrame = None
-#backgrouds = []
-#pedestrians = {} #行人字典
+
 et=exciting(camera,width=width,height=height)
 
-faces = [['陈思羽','18']]
-faceShow = []
-
-f=0
 while camera.isOpened():
-	et.start
-
+	
 	for event in pygame.event.get():
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			pass
@@ -69,5 +65,5 @@ while camera.isOpened():
 			camera.release()
 			pygame.quit()
 			exit()
-	
+	et.start
 		
